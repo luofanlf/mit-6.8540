@@ -27,14 +27,29 @@ func ihash(key string) int {
 }
 
 // main/mrworker.go calls this function.
-func Worker(mapf func(string, string) []KeyValue,
-	reducef func(string, []string) string) {
+func Worker(mapf func(string, string) []KeyValue, reducef func(string, []string) string) {
+	//随机生成一个workerid
+	// workerId := uuid.New().String()
 
 	// Your worker implementation here.
 
 	// uncomment to send the Example RPC to the coordinator.
-	// CallExample()
+	CallExample()
 
+}
+
+// rpc方法：向coordinator请求任务
+func AskForTask(workId string) {
+
+	// //请求参数
+	// args := AskTaskArgs{}
+	// args.WorkerId = workId
+
+	// //响应参数
+	// reply := AskTaskReply{}
+
+	// //调用请求任务rpc
+	// ok := call()
 }
 
 // example function to show how to make an RPC call to the coordinator.

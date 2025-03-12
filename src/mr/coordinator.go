@@ -8,9 +8,22 @@ import (
 	"os"
 )
 
+type MapTask struct {
+	TaskId   int
+	WorkerId string
+	Filename string
+}
+
+type ReduceTask struct {
+	TaskId   int
+	WorkerId string
+}
+
 type Coordinator struct {
 	// Your definitions here.
-
+	mapTasks      chan MapTask
+	reduceTasks   chan ReduceTask
+	currentTaskId int //用于生成taskid
 }
 
 // Your code here -- RPC handlers for the worker to call.
@@ -20,6 +33,14 @@ type Coordinator struct {
 // the RPC argument and reply types are defined in rpc.go.
 func (c *Coordinator) Example(args *ExampleArgs, reply *ExampleReply) error {
 	reply.Y = args.X + 1
+	return nil
+}
+
+func (c *Coordinator) AskForTask(args *AskTaskArgs, reply *AskTaskReply) error {
+	reply.TaskType = "map"
+	reply.TaskId = 0
+	reply.FileName = "test.txt"
+	reply.NumOtherPhase = 1
 	return nil
 }
 
@@ -51,7 +72,22 @@ func (c *Coordinator) Done() bool {
 // main/mrcoordinator.go calls this function.
 // nReduce is the number of reduce tasks to use.
 func MakeCoordinator(files []string, nReduce int) *Coordinator {
-	c := Coordinator{}
+	//初始化coordinator
+	c := Coordinator{
+		mapTasks:      make(chan MapTask, len(files)),
+		reduceTasks:   make(chan ReduceTask, nReduce),
+		currentTaskId: 1,
+	}
+
+	//初始化map任务
+	for _, filename := range files {
+		c.mapTasks <- MapTask{
+			TaskId:   c.currentTaskId,
+			WorkerId: "",
+			Filename: filename,
+		}
+		c.currentTaskId++
+	}
 
 	// Your code here.
 
