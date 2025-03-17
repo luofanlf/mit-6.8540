@@ -16,38 +16,73 @@ import (
 // and reply for an RPC.
 //
 
-type ExampleArgs struct {
-	X int
-}
-
-type ExampleReply struct {
-	Y int
-}
-
-// 请求任务参数
-type AskTaskArgs struct {
+// 请求map任务参数
+type AskMapTaskArgs struct {
 	WorkerId string
 }
 
-// 请求任务回复
-type AskTaskReply struct {
-	TaskType      string //可以是map,reduce
-	TaskId        int    //任务id
-	FileName      string //map任务的文件名
-	NumOtherPhase int    //reduce任务的数量
+// 请求map任务回复
+type AskMapTaskReply struct {
+	Acknowledged bool
+	Task         MapTask
+	NReduce      int
 }
 
-// Add your RPC definitions here.
+// 报告map任务参数
+type ReportMapTaskArgs struct {
+	WorkerId  string
+	Task      MapTask
+	IsJobDone bool
+}
 
-type ReoportTaskArgs struct {
-	TaskType     string
-	TaskId       int
+// 报告map任务回复
+type ReportMapTaskReply struct {
+	Acknowledged bool
+}
+
+// 请求reduce任务参数
+type AskForReduceTaskArgs struct {
+	WorkerId string
+}
+
+// 请求reduce任务响应参数
+type AskForReduceTaskReply struct {
 	WorkerId     string
-	IsCompeleted bool //是否完成任务
+	Acknowledged bool
+	Task         ReduceTask
 }
 
-type ReportTaskReply struct {
-	Acknowledged bool //coordinator是否收到任务报告
+// 报告reduce任务参数
+type ReportReduceTaskArgs struct {
+	WorkerId  string
+	Task      ReduceTask
+	IsJobDone bool
+}
+
+// 报告reduce任务响应参数
+type ReportReduceTaskReply struct {
+	Acknowledged bool
+}
+
+// ping coordinator请求参数
+type PingCoordinatorArgs struct {
+	WorkerId string
+}
+
+// ping coordinator响应参数
+type PingCoordinatorReply struct {
+	Acknowledged bool
+}
+
+// 心跳检测请求参数
+type HeartbeatArgs struct {
+	WorkerId  string
+	Timestamp int64
+}
+
+// 心跳检测响应参数
+type HeartbeatReply struct {
+	Acknowledged bool
 }
 
 // Cook up a unique-ish UNIX-domain socket name
