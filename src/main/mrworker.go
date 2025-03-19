@@ -29,7 +29,7 @@ func main() {
 
 	fmt.Println("start worker")
 
-	mr.Worker(mapf, reducef)
+	mr.MakeWorker(mapf, reducef)
 }
 
 // load the application Map and Reduce functions

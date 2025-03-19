@@ -52,21 +52,24 @@ func MakeWorker(mapf func(string, string) []KeyValue, reducef func(string, []str
 	//心跳机制，用于检验worker故障
 	go func() {
 		for {
-			time.Sleep(2 * time.Second)
-			Heartbeat(workerId, time.Now().Unix())
+			Heartbeat(workerId)
 			log.Printf("worker %v ping coordinator", workerId)
+			time.Sleep(2 * time.Second)
 		}
 	}()
 	// uncomment to send the Example RPC to the coordinator.
 	//map任务
 	for {
-		//rpc请求coodinator分配任务
 		task, acknowledged, nReduce := AskForMapTask(workerId)
 		if acknowledged {
-			//执行map任务
+			if task.TaskId == 0 {
+				// 没有新任务，但还有未完成的 map 任务，等待后重试
+				time.Sleep(1 * time.Second)
+				continue
+			}
 			filename := task.Filename
 			taskId := task.TaskId
-			log.Printf("fetch maptask success, filename: %v", filename)
+			log.Printf("fetch maptask success, taskid: %v", taskId)
 			file, err := os.Open(filename)
 			if err != nil {
 				log.Fatalf("cannot open %v", filename)
@@ -96,9 +99,10 @@ func MakeWorker(mapf func(string, string) []KeyValue, reducef func(string, []str
 				}
 
 				f.Close()
+
 			}
 
-			log.Printf("map task successfully done ")
+			log.Printf("map task %v successfully done ", taskId)
 
 			//返回任务执行response
 			acknowledged = ReportMapTask(workerId, task, true)
@@ -106,8 +110,8 @@ func MakeWorker(mapf func(string, string) []KeyValue, reducef func(string, []str
 				log.Printf("report map task failed")
 				break
 			}
-
 		} else {
+			// 所有 map 任务都完成了，进入 reduce 阶段
 			break
 		}
 	}
@@ -115,12 +119,18 @@ func MakeWorker(mapf func(string, string) []KeyValue, reducef func(string, []str
 
 	//reduce任务
 	for {
+		log.Printf("reduce task")
 		task, acknowledged := AskForReduceTask(workerId)
 		filenames := task.Filenames
 		taskId := task.TaskId
 
 		log.Printf("reduce task: %v, filenames: %v", taskId, filenames)
 		if acknowledged {
+			if task.TaskId == 0 {
+				// 没有新任务，但还有未完成的 map 任务，等待后重试
+				time.Sleep(1 * time.Second)
+				continue
+			}
 			log.Printf("successful fetch reduce task:% v", taskId)
 			var intermediate []KeyValue
 			//读取reduce任务对应的文件中的健值对
@@ -176,7 +186,6 @@ func MakeWorker(mapf func(string, string) []KeyValue, reducef func(string, []str
 				log.Printf("report map task failed")
 				break
 			}
-
 		} else {
 			break
 		}
@@ -293,10 +302,10 @@ func pingCoordinator(workerId string) (acknowledged bool) {
 	return reply.Acknowledged
 }
 
-func Heartbeat(workerId string, timestamp int64) (acknowledged bool) {
+func Heartbeat(workerId string) (acknowledged bool) {
+
 	args := HeartbeatArgs{
-		WorkerId:  workerId,
-		Timestamp: timestamp,
+		WorkerId: workerId,
 	}
 	reply := HeartbeatReply{}
 	ok := call("Coordinator.Heartbeat", &args, &reply)

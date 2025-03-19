@@ -76,8 +76,7 @@ type PingCoordinatorReply struct {
 
 // 心跳检测请求参数
 type HeartbeatArgs struct {
-	WorkerId  string
-	Timestamp int64
+	WorkerId string
 }
 
 // 心跳检测响应参数
