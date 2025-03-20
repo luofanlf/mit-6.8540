@@ -214,7 +214,7 @@ func AskForMapTask(workerId string) (task MapTask, acknowledged bool, nReduce in
 	reply := AskMapTaskReply{}
 
 	//调用请求任务rpc
-	ok := call("Coordinator.AskForMapTask", &args, &reply)
+	ok := call("Coordinator.AssignMapTask", &args, &reply)
 	if !ok {
 		fmt.Println("ask for map task failed")
 		return MapTask{}, false, 0
@@ -237,7 +237,7 @@ func ReportMapTask(workerId string, task MapTask, isJobDone bool) (acknowledged 
 	reply := ReportMapTaskReply{}
 
 	//调用报告任务rpc
-	ok := call("Coordinator.ReportMapTask", &args, &reply)
+	ok := call("Coordinator.HandleReportMapTask", &args, &reply)
 	if !ok {
 		log.Printf("report map task failed")
 		return false
@@ -257,7 +257,7 @@ func AskForReduceTask(workerId string) (task ReduceTask, acknowledged bool) {
 	reply := AskForReduceTaskReply{}
 
 	//调用请求reduce任务rpc
-	ok := call("Coordinator.AskForReduceTask", &args, &reply)
+	ok := call("Coordinator.AssignReduceTask", &args, &reply)
 	if !ok {
 		log.Printf("ask for reduce task failed")
 		return ReduceTask{}, false
@@ -279,7 +279,7 @@ func ReportReduceTask(workerId string, task ReduceTask, isJobDone bool) (acknowl
 	reply := ReportReduceTaskReply{}
 
 	//调用报告reduce任务rpc
-	ok := call("Coordinator.ReportReduceTask", &args, &reply)
+	ok := call("Coordinator.HandleReportReduceTask", &args, &reply)
 	if !ok {
 		log.Printf("report reduce task failed")
 		return false
@@ -294,7 +294,7 @@ func pingCoordinator(workerId string) (acknowledged bool) {
 		WorkerId: workerId,
 	}
 	reply := PingCoordinatorReply{}
-	ok := call("Coordinator.PingCoordinator", &args, &reply)
+	ok := call("Coordinator.AnswerPingCoordinator", &args, &reply)
 	if !ok {
 		log.Printf("ping coordinator failed")
 		return false
@@ -308,7 +308,7 @@ func Heartbeat(workerId string) (acknowledged bool) {
 		WorkerId: workerId,
 	}
 	reply := HeartbeatReply{}
-	ok := call("Coordinator.Heartbeat", &args, &reply)
+	ok := call("Coordinator.AnswerHeartbeat", &args, &reply)
 	if !ok {
 		log.Printf("heartbeat failed")
 		return false

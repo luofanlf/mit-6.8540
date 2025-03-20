@@ -54,7 +54,7 @@ type Coordinator struct {
 
 // Your code here -- RPC handlers for the worker to call.
 
-func (c *Coordinator) AskForMapTask(args *AskMapTaskArgs, reply *AskMapTaskReply) error {
+func (c *Coordinator) AssignMapTask(args *AskMapTaskArgs, reply *AskMapTaskReply) error {
 	c.mu.Lock()
 	c.workers[args.WorkerId] = &Worker{
 		WorkerId: args.WorkerId,
@@ -85,7 +85,7 @@ func (c *Coordinator) AskForMapTask(args *AskMapTaskArgs, reply *AskMapTaskReply
 	return nil
 }
 
-func (c *Coordinator) ReportMapTask(arg *ReportMapTaskArgs, reply *ReportMapTaskReply) error {
+func (c *Coordinator) HandleReportMapTask(arg *ReportMapTaskArgs, reply *ReportMapTaskReply) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -139,7 +139,7 @@ func (c *Coordinator) initReduceTask() {
 	log.Printf("length of reduce tasks: %v", len(c.reduceTasks))
 }
 
-func (c *Coordinator) AskForReduceTask(arg *AskForReduceTaskArgs, reply *AskForReduceTaskReply) error {
+func (c *Coordinator) AssignReduceTask(arg *AskForReduceTaskArgs, reply *AskForReduceTaskReply) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	log.Printf("ask for reduce task")
@@ -164,7 +164,7 @@ func (c *Coordinator) AskForReduceTask(arg *AskForReduceTaskArgs, reply *AskForR
 	return nil
 }
 
-func (c *Coordinator) ReportReduceTask(arg *ReportReduceTaskArgs, reply *ReportReduceTaskReply) error {
+func (c *Coordinator) HandleReportReduceTask(arg *ReportReduceTaskArgs, reply *ReportReduceTaskReply) error {
 	// 如果reduce任务成功执行，则将reduce任务数加1
 	if arg.IsJobDone {
 		arg.Task.TaskStatus = "COMPLETED"
@@ -182,7 +182,7 @@ func (c *Coordinator) ReportReduceTask(arg *ReportReduceTaskArgs, reply *ReportR
 	return nil
 }
 
-func (c *Coordinator) PingCoordinator(arg *PingCoordinatorArgs, reply *PingCoordinatorReply) error {
+func (c *Coordinator) AnswerPingCoordinator(arg *PingCoordinatorArgs, reply *PingCoordinatorReply) error {
 	reply.Acknowledged = true
 	return nil
 }
@@ -219,7 +219,7 @@ func (c *Coordinator) Done() bool {
 	return c.isDone
 }
 
-func (c *Coordinator) Heartbeat(arg *HeartbeatArgs, reply *HeartbeatReply) error {
+func (c *Coordinator) AnswerHeartbeat(arg *HeartbeatArgs, reply *HeartbeatReply) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
