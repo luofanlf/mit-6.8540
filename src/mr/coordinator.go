@@ -226,18 +226,6 @@ func (c *Coordinator) AnswerHeartbeat(arg *HeartbeatArgs, reply *HeartbeatReply)
 	workerId := arg.WorkerId
 	currentTime := time.Now().Unix()
 
-	// 检查 worker 是否存在，如果不存在则创建
-	// if _, exists := c.workers[workerId]; !exists {
-	// 	c.workers[workerId] = &Worker{
-	// 		WorkerId:    workerId,
-	// 		Status:      "running",
-	// 		MapTasks:    []int{},
-	// 		ReduceTasks: []int{},
-	// 	}
-	// } else {
-	// 	// 更新已存在 worker 的心跳时间
-	// 	c.workers[workerId].Heartbeat = currentTime
-	// }
 	c.workerHeartbeatMap[workerId] = currentTime
 
 	log.Printf("worker %v heartbeat at %v", workerId, c.workerHeartbeatMap[workerId])
